@@ -1,0 +1,57 @@
+version: '3.8' # Versión del esquema de Compose
+
+services:
+  db: # Base de datos MySQL
+    image: mysql:8.0 # Versión de la imagen de MySQL que se va a usar
+    container_name: instituto_db # Nombre que va a tener el contenedor que albergue la bd
+    restart: always # Reiniciará el contenedor siempre que se detenga
+    environment: # Las variables de entorno están almacenadas en un archivo .env y se leerán desed ahí
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command: > # Argumentos adicionales que fuerza el charset/collation por si se guardan datos con tildes o emojis (tuvo que ser añadido porque si no daba problemas)
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./db-data:/var/lib/mysql # Montaje de tipo Bind: persiste los datos de MySQL en la carpeta local './db-data' (está en este mismo proyecto)
+      - ./init-db:/docker-entrypoint-initdb.d:ro  # Script de inicialización de la base de datos (se ejecuta solo la primera vez)
+    networks:
+      - instituto_network # Conecta este servicio a la red que está definida más abajo
+
+  adminer: # Gestor de base de datos mediante una interfaz web y que es más amigable para el usuario que phpMyAdmin
+    image: adminer:latest # Versión de la imagen de Adminer que se va a usar
+    container_name: instituto_adminer # Nombre que va a tener el contendor de Adminer
+    restart: always  # Reiniciará el contenedor siempre que se detenga
+    ports:
+      - "8081:8080" # Mapea el puerto de Adminer (8080) al puerto 8080 del host
+    networks:
+      - instituto_network # Conecta este servicio a la red que está definida más abajo
+    depends_on:
+      - db # Se espera a que el contenedor db esté levantado para levantar este contenedor (el contendor con la db debe levantarse antes de este)
+
+  flask-app: # Servicio de la aplicación Flask (sencilla) que se usará para la gestión de alumnos
+    build: ./web # Construye la imagen usando el Dockerfile en la carpeta ./web
+    container_name: instituto_flask # Nombre del contenedor que tendrá la almacenado la aplicación Flask
+    restart: always # Reiniciará el contenedor siempre que se detenga
+    volumes:
+      - ./web:/app # Monta la carpeta del proyecto dentro del contenedor (útil para el desarrollo, ya que se pueden hacer cambios en directo)
+    environment: # Variables que Flask leerá para conectarse a la DB y que está almacenadas en el archivo .env
+      FLASK_APP: app.py
+      FLASK_ENV: development
+      MYSQL_HOST: ${DB_HOST}
+      MYSQL_PORT: ${DB_PORT}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports: # Mapea el puerto 5000 (Flask por defecto) al puerto 8000 del host
+      - "8000:5000" 
+    depends_on:
+      - db # Se espera a que el contenedor db esté levantado para levantar este contenedor (el contendor con la db debe levantarse antes de este)
+    networks:
+      - instituto_network # Conecta este servicio a la red que está definida más abajo
+
+networks:
+  instituto_network:
+    driver: bridge # Tipo de red: bridge es la más habitual para proyectos locales
+    name: instituto_network # Nombre de la red que se creará

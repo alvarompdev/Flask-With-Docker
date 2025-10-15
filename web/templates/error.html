@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Error - Sistema de Matrículas{% endblock %}
+
+{% block extra_styles %}
+{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="error-container">
+        <div class="error-icon">⚠️</div>
+        <h1 class="error-title">¡Ups! Algo salió mal</h1>
+        <p class="error-message">
+            {{ message or 'Ha ocurrido un error inesperado. Por favor, intenta nuevamente.' }}
+        </p>
+        
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">🏠 Volver al Inicio</a>
+            <a href="/alumnos" class="btn btn-secondary">👥 Ver Alumnos</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

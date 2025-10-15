@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - Sistema de Matrículas{% endblock %}
+
+{% block extra_styles %}
+{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="page-header">
+        <h1 class="page-title">👥 {{ titulo }}</h1>
+        <p class="page-subtitle">Listado completo de todos los alumnos matriculados, ordenado alfabéticamente</p>
+    </div>
+
+    <div class="header-actions">
+        <div class="total-count">
+            📊 Total de alumnos: <strong>{{ alumnos|length }}</strong>
+        </div>
+        <a href="/api/alumnos" target="_blank" class="export-btn">📥 Exportar JSON</a>
+    </div>
+
+    <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por nombre, apellidos, DNI, curso o familia...">
+    </div>
+
+    <div class="table-container">
+        <table id="alumnosTable">
+            <thead>
+                <tr>
+                    <th>DNI</th>
+                    <th>Nombre</th>
+                    <th>Apellidos</th>
+                    <th>Curso</th>
+                    <th>Familia Profesional</th>
+                    <th>Contacto</th>
+                    <th>Fecha Matrícula</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alumno in alumnos %}
+                <tr class="alumno-row" data-curso-id="{{ alumno.id_curso }}">
+                    <td><strong>{{ alumno.dni }}</strong></td>
+                    <td class="alumno-nombre">{{ alumno.nombre }}</td>
+                    <td class="alumno-apellidos">{{ alumno.apellidos }}</td>
+                    <td>
+                        <a href="/curso/{{ alumno.id_curso }}" class="curso-badge-link" title="Ver detalles del curso">
+                            {{ alumno.nombre_curso }}
+                        </a>
+                    </td>
+                    <td><span class="familia-badge">{{ alumno.nombre_familia }}</span></td>
+                    <td class="contact-info">
+                        {% if alumno.telefono %}📱 {{ alumno.telefono }}<br>{% endif %}
+                        {% if alumno.email %}📧 {{ alumno.email }}{% endif %}
+                    </td>
+                    <td>{{ alumno.fecha_matricula.strftime('%d/%m/%Y') if alumno.fecha_matricula else 'N/A' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="no-results">
+                        No hay alumnos matriculados
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Búsqueda en tiempo real
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.alumno-row');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchValue) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

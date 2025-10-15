@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}{{ curso.nombre_curso }} - Sistema de Matrículas{% endblock %}
+
+{% block extra_styles %}
+{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="curso-header">
+        <div class="curso-title">📚 {{ curso.nombre_curso }}</div>
+        <div class="curso-familia">{{ curso.nombre_familia }}</div>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-label">Alumnos Matriculados</div>
+            <div class="stat-value">{{ curso.alumnos_matriculados }}</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Capacidad Máxima</div>
+            <div class="stat-value">{{ curso.capacidad_maxima }}</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Plazas Disponibles</div>
+            <div class="stat-value">{{ curso.capacidad_maxima - curso.alumnos_matriculados }}</div>
+        </div>
+    </div>
+
+    <div class="progress-section">
+        <strong>Ocupación del Curso</strong>
+        <div class="progress-bar">
+            {% set porcentaje = (curso.alumnos_matriculados / curso.capacidad_maxima * 100) | round(1) %}
+            <div class="progress-fill {% if porcentaje >= 90 %}danger{% elif porcentaje >= 70 %}warning{% endif %}" 
+                 style="width: {{ porcentaje }}%">
+                {{ porcentaje }}%
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #1a202c;">
+        👥 Alumnos Matriculados ({{ alumnos|length }})
+    </h2>
+
+    {% if alumnos %}
+    <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por nombre, apellidos o DNI...">
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>DNI</th>
+                    <th>Nombre Completo</th>
+                    <th>Contacto</th>
+                    <th>Fecha Matrícula</th>
+                </tr>
+            </thead>
+            <tbody id="alumnosTable">
+                {% for alumno in alumnos %}
+                <tr class="alumno-row">
+                    <td><strong>{{ alumno.dni }}</strong></td>
+                    <td>
+                        <div class="alumno-nombre">{{ alumno.nombre }} {{ alumno.apellidos }}</div>
+                    </td>
+                    <td class="contact-info">
+                        {% if alumno.telefono %}📱 {{ alumno.telefono }}<br>{% endif %}
+                        {% if alumno.email %}📧 {{ alumno.email }}{% endif %}
+                    </td>
+                    <td>{{ alumno.fecha_matricula.strftime('%d/%m/%Y %H:%M') if alumno.fecha_matricula else 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-alumnos">
+        <p style="font-size: 1.2rem;">😔 No hay alumnos matriculados en este curso</p>
+        <p>Este curso aún no tiene alumnos inscritos</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Búsqueda en tiempo real
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const searchValue = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.alumno-row');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchValue) ? '' : 'none';
+            });
+        });
+    }
+</script>
+{% endblock %}

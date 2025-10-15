@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Matrículas{% endblock %}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> 
+    
+    {% block extra_styles %}{% endblock %}
+    
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">🎓 Instituto FP</div>
+            <div class="nav-links">
+                <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Dashboard</a>
+                <a href="/alumnos" class="nav-link {% if request.path == '/alumnos' %}active{% endif %}">Alumnos</a>
+                <a href="/familias" class="nav-link {% if request.path == '/familias' %}active{% endif %}">Familias</a>
+                <a href="http://localhost:8081" target="_blank" class="nav-link adminer">Adminer DB</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    </body>
+</html>

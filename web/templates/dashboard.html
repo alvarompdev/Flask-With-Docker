@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema de Matrículas{% endblock %}
+
+{% block extra_styles %}
+{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="page-header">
+        <h1 class="page-title">📊 Dashboard del Instituto</h1>
+        <p class="page-subtitle">Resumen general de matrículas y estadísticas</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Alumnos Activos</div>
+            <div class="stat-value">{{ estadisticas.total_alumnos_activos }}</div>
+            <div class="stat-description">de 2000 plazas disponibles</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Plazas Disponibles</div>
+            <div class="stat-value">{{ estadisticas.plazas_disponibles }}</div>
+            <div class="stat-description">libres para nuevas matrículas</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Familias Profesionales</div>
+            <div class="stat-value">{{ estadisticas.total_familias }}</div>
+            <div class="stat-description">diferentes especialidades</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Cursos Disponibles</div>
+            <div class="stat-value">{{ estadisticas.total_cursos }}</div>
+            <div class="stat-description">en total</div>
+        </div>
+    </div>
+
+    <div style="background: #f7fafc; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+        <strong>Ocupación del Instituto:</strong> {{ "%.1f"|format(estadisticas.porcentaje_ocupacion) }}%
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ estadisticas.porcentaje_ocupacion }}%"></div>
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <h2 class="section-title">🎯 Cursos con Mayor Disponibilidad</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Curso</th>
+                    <th>Familia Profesional</th>
+                    <th>Nivel</th>
+                    <th>Matriculados</th>
+                    <th>Capacidad</th>
+                    <th>Disponibles</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for curso in cursos_disponibles %}
+                <tr class="dashboard-clickable-row" onclick="window.location='/curso/{{ curso.id_curso }}';">
+                    <td><a href="/curso/{{ curso.id_curso }}" class="dashboard-course-name" onclick="event.stopPropagation();">{{ curso.nombre_curso }}</a></td>
+                    <td>{{ curso.nombre_familia }}</td>
+                    <td>{{ curso.nivel }}º</td>
+                    <td>{{ curso.alumnos_matriculados }}</td>
+                    <td>{{ curso.capacidad_maxima }}</td>
+                    <td>{{ curso.plazas_disponibles }}</td>
+                    <td>
+                        {% if curso.porcentaje_ocupacion < 50 %}
+                            <span class="badge badge-success">Disponible</span>
+                        {% elif curso.porcentaje_ocupacion < 80 %}
+                            <span class="badge badge-warning">Medio</span>
+                        {% else %}
+                            <span class="badge badge-danger">Completo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/curso/{{ curso.id_curso }}" class="btn-action" title="Ver detalles del curso" onclick="event.stopPropagation();">
+                            Ver
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="content-card">
+    <h2 class="section-title">📚 Familias Profesionales</h2>
+    {% for familia in familias %}
+    <div class="familia-card">
+        <div class="familia-name">{{ familia.nombre_familia }}</div>
+        <div class="familia-stats">
+            <span>📖 {{ familia.total_cursos }} cursos</span>
+            <span>👥 {{ familia.total_alumnos or 0 }} alumnos</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

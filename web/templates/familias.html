@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Familias Profesionales - Sistema de Matrículas{% endblock %}
+
+{% block extra_styles %}
+{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="page-header">
+        <h1 class="page-title">📚 Familias Profesionales</h1>
+        <p class="page-subtitle">Todas las especialidades formativas disponibles en el instituto</p>
+    </div>
+
+    <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Buscar familia profesional...">
+    </div>
+
+    <div class="familias-grid" id="familiasGrid">
+        {% for familia in familias %}
+        <div class="familia-card-expandable" data-familia="{{ familia.nombre_familia|lower }}">
+            <div class="familia-header">
+                <div class="familia-icon">
+                    {% if 'Informática' in familia.nombre_familia %}💻
+                    {% elif 'Sanidad' in familia.nombre_familia %}🏥
+                    {% elif 'Administración' in familia.nombre_familia %}📊
+                    {% elif 'Comercio' in familia.nombre_familia %}🛒
+                    {% elif 'Electricidad' in familia.nombre_familia %}⚡
+                    {% elif 'Hostelería' in familia.nombre_familia %}🍽️
+                    {% elif 'Imagen' in familia.nombre_familia %}💇
+                    {% elif 'Transporte' in familia.nombre_familia %}🚗
+                    {% elif 'Fabricación' in familia.nombre_familia %}🔧
+                    {% else %}🎓
+                    {% endif %}
+                </div>
+                <div class="familia-title">{{ familia.nombre_familia }}</div>
+            </div>
+
+            <div class="familia-description">
+                {{ familia.descripcion or 'Formación profesional especializada' }}
+            </div>
+
+            <div class="familia-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Cursos</span>
+                    <span class="stat-value">{{ familia.total_cursos }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Alumnos</span>
+                    <span class="stat-value">{{ familia.total_alumnos or 0 }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Capacidad</span>
+                    <span class="stat-value">{{ familia.capacidad_total or 0 }}</span>
+                </div>
+            </div>
+
+            {% if familia.capacidad_total and familia.capacidad_total > 0 %}
+            <div class="progress-mini">
+                {% set ocupacion = ((familia.total_alumnos or 0) / familia.capacidad_total * 100) %}
+                <div class="progress-mini-fill" style="width: {{ ocupacion }}%"></div>
+            </div>
+            {% endif %}
+
+            <!-- Botón para expandir/colapsar cursos -->
+            <button class="toggle-cursos-btn" onclick="toggleCursos({{ familia.id_familia }})">
+                <span id="icon-{{ familia.id_familia }}">▼</span> Ver Cursos
+            </button>
+
+            <!-- Lista de cursos (inicialmente oculta) -->
+            <div class="cursos-list" id="cursos-{{ familia.id_familia }}" style="display: none;">
+                <div class="cursos-loading" id="loading-{{ familia.id_familia }}">
+                    Cargando cursos...
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-results">
+            No hay familias profesionales registradas
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // Búsqueda en tiempo real
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.familia-card-expandable');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const familiaName = card.dataset.familia;
+            if (familiaName.includes(searchValue)) {
+                card.style.display = '';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Mostrar mensaje si no hay resultados
+        const grid = document.getElementById('familiasGrid');
+        let noResults = grid.querySelector('.no-results');
+        
+        if (visibleCount === 0 && searchValue !== '') {
+            if (!noResults) {
+                noResults = document.createElement('div');
+                noResults.className = 'no-results';
+                noResults.innerHTML = '<p style="font-size: 1.2rem;">😕 No se encontraron familias profesionales</p><p>Intenta con otro término de búsqueda</p>';
+                grid.appendChild(noResults);
+            }
+        } else if (noResults && visibleCount > 0) {
+            noResults.remove();
+        }
+    });
+
+    // Cache para los cursos cargados
+    const cursosCache = {};
+
+    // Función para cargar y mostrar/ocultar cursos
+    async function toggleCursos(familiaId) {
+        const cursosList = document.getElementById(`cursos-${familiaId}`);
+        const icon = document.getElementById(`icon-${familiaId}`);
+        const loading = document.getElementById(`loading-${familiaId}`);
+
+        // Si ya está visible, solo colapsar
+        if (cursosList.style.display === 'block') {
+            cursosList.style.display = 'none';
+            icon.textContent = '▼';
+            return;
+        }
+
+        // Mostrar el contenedor
+        cursosList.style.display = 'block';
+        icon.textContent = '▲';
+
+        // Si ya están cargados los cursos, no hacer otra petición
+        if (cursosCache[familiaId]) {
+            return;
+        }
+
+        // Cargar cursos desde el servidor
+        try {
+            const response = await fetch(`/api/cursos-familia/${familiaId}`);
+            const cursos = await response.json();
+
+            if (cursos.error) {
+                cursosList.innerHTML = '<div class="cursos-loading">Error al cargar los cursos</div>';
+                return;
+            }
+
+            if (cursos.length === 0) {
+                cursosList.innerHTML = '<div class="cursos-loading">No hay cursos disponibles</div>';
+                cursosCache[familiaId] = true;
+                return;
+            }
+
+            // Renderizar los cursos
+            let html = '';
+            cursos.forEach(curso => {
+                html += `
+                    <div class="curso-item">
+                        <div class="curso-nombre">
+                            <span class="curso-badge">${curso.nivel}º</span>
+                            ${curso.nombre_curso}
+                        </div>
+                        <div class="curso-actions">
+                            <span class="curso-matriculados">
+                                👥 ${curso.alumnos_matriculados}/${curso.capacidad_maxima}
+                            </span>
+                            <a href="/curso/${curso.id_curso}" class="btn-action-sm">
+                                Ver
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+
+            cursosList.innerHTML = html;
+            cursosCache[familiaId] = true;
+
+        } catch (error) {
+            console.error('Error al cargar cursos:', error);
+            cursosList.innerHTML = '<div class="cursos-loading">Error al cargar los cursos</div>';
+        }
+    }
+</script>
+{% endblock %}
