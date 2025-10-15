@@ -72,6 +72,8 @@ El sistema utiliza una arquitectura de **tres capas** desplegada con Docker:
 └─────────────────────────────────────────┘
 ```
 
+---
+
 ### Stack Tecnológico
 
 | Componente | Tecnología | Versión | Propósito |
@@ -168,6 +170,8 @@ instituto-gestion/
 └── db-data/                    # Datos persistentes MySQL (auto-creada)
     └── (archivos internos de MySQL)
 ```
+
+---
 
 ### Descripción de Archivos Clave
 
