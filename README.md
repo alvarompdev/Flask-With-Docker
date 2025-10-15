@@ -7,14 +7,14 @@ Sistema web completo para la gestión de alumnos, cursos y familias profesionale
 ## 📋 Tabla de Contenidos
 
 1. [Descripción del Sistema](#-descripción-del-sistema)
-2. [Arquitectura y Tecnologías](#-arquitectura-y-tecnologías)
+2. [Arquitectura y Tecnologías](#%EF%B8%8F-arquitectura-y-tecnolog%C3%ADas)
 3. [Requisitos Previos](#-requisitos-previos)
 4. [Estructura del Proyecto](#-estructura-del-proyecto)
-5. [Instalación y Configuración](#-instalación-y-configuración)
+5. [Instalación y Configuración](#%EF%B8%8F-instalaci%C3%B3n-y-configuraci%C3%B3n)
 6. [Puesta en Marcha](#-puesta-en-marcha)
-7. [Uso de la Aplicación](#-uso-de-la-aplicación)
+7. [Uso de la Aplicación](#%EF%B8%8F-uso-de-la-aplicaci%C3%B3n)
 8. [API REST](#-api-rest)
-9. [Base de Datos](#-base-de-datos)
+9. [Base de Datos](#%EF%B8%8F-base-de-datos)
 10. [Gestión de Contenedores](#-gestión-de-contenedores)
 11. [Solución de Problemas](#-solución-de-problemas)
 12. [Mantenimiento](#-mantenimiento)
